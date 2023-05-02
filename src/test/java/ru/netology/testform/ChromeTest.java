@@ -24,6 +24,7 @@ class ChromeTest {
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--headless");
         driver = new ChromeDriver(options);
+        driver.get("http://localhost:9999");
     }
 
     @AfterEach
@@ -36,7 +37,6 @@ class ChromeTest {
 
     @Test
     void shouldSendSuccessful() {
-        driver.get("http://localhost:9999");
         driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Иванов Василий");
         driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79163222322");
         driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
@@ -48,31 +48,48 @@ class ChromeTest {
 
     @Test
     void shouldFailByName() {
-        driver.get("http://localhost:9999");
         driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Ivanov Vasily");
         driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79163222322");
         driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
         driver.findElement(By.cssSelector("[type='button']")).click();
         String expected = "Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.";
-        String actual = driver.findElement(By.cssSelector("[data-test-id='name'] .input__sub")).getText().trim();
+        String actual = driver.findElement(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")).getText().trim();
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    void shouldFailByNoNameInput() {
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79163222322");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("[type='button']")).click();
+        String expected = "Поле обязательно для заполнения";
+        String actual = driver.findElement(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")).getText().trim();
         Assertions.assertEquals(expected, actual);
     }
 
     @Test
     void shouldFailByPhone() {
-        driver.get("http://localhost:9999");
         driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Иванов Василий");
         driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+7(916)3222322");
         driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
         driver.findElement(By.cssSelector("[type='button']")).click();
         String expected = "Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.";
-        String actual = driver.findElement(By.cssSelector("[data-test-id='phone'] .input__sub")).getText().trim();
+        String actual = driver.findElement(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")).getText().trim();
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    void shouldFailByNoPhoneInput() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Иванов Василий");
+        driver.findElement(By.cssSelector("[data-test-id='agreement']")).click();
+        driver.findElement(By.cssSelector("[type='button']")).click();
+        String expected = "Поле обязательно для заполнения";
+        String actual = driver.findElement(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")).getText().trim();
         Assertions.assertEquals(expected, actual);
     }
 
     @Test
     void shouldFailByAgreement() {
-        driver.get("http://localhost:9999");
         driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Иванов Василий");
         driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79163222322");
         driver.findElement(By.cssSelector("[type='button']")).click();
